@@ -1,52 +1,91 @@
 import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './App.css';
+
+// Using your provided credentials directly
+const supabase = createClient(
+  'https://mfqubfjakdfsmsszaxai.supabase.co', 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcXViZmpha2Rmc21zc3pheGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjkxODcsImV4cCI6MjA4NzI0NTE4N30.Q7VjclZFeK9kjV1qohE4iLTilOJlVS0o10b8OYqG8PM'
+);
 
 function App() {
   const [comments, setComments] = useState([]);
   const [user, setUser] = useState('');
   const [msg, setMsg] = useState('');
-
-  // Connections State
+  const [connections, setConnections] = useState([]);
+  
+  // Modal & Upload State
   const [showModal, setShowModal] = useState(false);
   const [newFriendName, setNewFriendName] = useState('');
-  const [newFriendImg, setNewFriendImg] = useState('');
-  const [connections, setConnections] = useState([
-    { name: 'React', img: '' },
-    { name: 'NestJS', img: '' },
-    { name: 'Supabase', img: '' },
-    { name: 'Vercel', img: '' },
-    { name: 'UI/UX', img: '' }
-  ]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  const fetchComments = async () => {
+  // Fetch Logic
+  const fetchData = async () => {
     try {
+      // Fetch Comments from your NestJS backend
       const res = await fetch(`${BACKEND_URL}/comments`);
       const data = await res.json();
       setComments(data);
+
+      // Fetch Connections directly from Supabase
+      const { data: connData } = await supabase
+        .from('connections')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (connData) setConnections(connData);
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      console.error("Error fetching data:", error);
     }
   };
 
   useEffect(() => {
-    fetchComments();
+    fetchData();
   }, []);
 
-  const handleConnect = (e) => {
+  const handleConnect = async (e) => {
     e.preventDefault();
     if (!newFriendName) return alert("Please enter a name!");
-    
-    const newFriend = {
-      name: newFriendName,
-      img: newFriendImg || 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png'
-    };
-    
-    setConnections([newFriend, ...connections]);
-    setNewFriendName('');
-    setNewFriendImg('');
-    setShowModal(false);
+    setIsUploading(true);
+
+    let finalImg = 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png';
+
+    try {
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        
+        // 1. Upload to 'avatars' bucket
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        // 2. Get Public URL
+        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        finalImg = data.publicUrl;
+      }
+
+      // 3. Insert into Database
+      const { error: dbError } = await supabase
+        .from('connections')
+        .insert([{ name: newFriendName, image_url: finalImg }]);
+
+      if (dbError) throw dbError;
+
+      // Reset UI
+      setNewFriendName('');
+      setSelectedFile(null);
+      setShowModal(false);
+      fetchData(); 
+    } catch (err) {
+      alert("Error connecting: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handlePost = async (e) => {
@@ -59,13 +98,13 @@ function App() {
         body: JSON.stringify({ username: user, content: msg }),
       });
       setUser(''); setMsg('');
-      fetchComments();
+      fetchData();
     } catch (e) { console.error(e); }
   };
 
   return (
     <div className="charblox-container">
-      {/* MODAL */}
+      {/* CONNECTION MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -77,17 +116,20 @@ function App() {
                 placeholder="Username..." 
                 value={newFriendName}
                 onChange={(e) => setNewFriendName(e.target.value)}
+                required
               />
-              <label>Profile Image URL (Optional)</label>
+              <label>Upload Profile Picture</label>
               <input 
-                type="text" 
-                placeholder="Paste link here..." 
-                value={newFriendImg}
-                onChange={(e) => setNewFriendImg(e.target.value)}
+                type="file" 
+                accept="image/*"
+                className="file-input-field"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
               />
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="save-btn">Connect</button>
+                <button type="submit" className="save-btn" disabled={isUploading}>
+                  {isUploading ? "Uploading..." : "Connect"}
+                </button>
               </div>
             </form>
           </div>
@@ -126,10 +168,10 @@ function App() {
               <span className="friend-name">Connect</span>
             </div>
 
-            {connections.map((f, index) => (
-              <div key={index} className="friend-item">
+            {connections.map((f) => (
+              <div key={f.id} className="friend-item">
                 <div className="friend-img-placeholder">
-                  <img src={f.img || 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png'} alt={f.name} className="friend-avatar-img" />
+                  <img src={f.image_url} alt={f.name} className="friend-avatar-img" />
                 </div>
                 <span className="friend-name">{f.name}</span>
               </div>
