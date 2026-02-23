@@ -24,20 +24,16 @@ function App() {
 
   const handlePost = async (e) => {
     e.preventDefault();
-    if (!user || !msg) return alert("Please fill in both fields!");
-
+    if (!user || !msg) return alert("Fill in both!");
     try {
       await fetch(`${BACKEND_URL}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: user, content: msg }),
       });
-      setUser('');
-      setMsg('');
+      setUser(''); setMsg('');
       fetchComments();
-    } catch (error) {
-      console.error("Error posting comment:", error);
-    }
+    } catch (e) { console.error(e); }
   };
 
   return (
@@ -48,10 +44,10 @@ function App() {
           <h1 className="logo">CHARBLOX</h1>
         </div>
         <div className="nav-search-container">
-          <input type="text" placeholder="Search Experiences..." className="nav-search-input" />
+          <input type="text" placeholder="Search Experiences" className="nav-search-input" />
         </div>
         <div className="nav-right">
-          <span className="robux-count"><span className="robux-icon">⏣</span> 1M+</span>
+          <span className="robux-count">⏣ 1M+</span>
           <div className="user-settings">⚙️</div>
         </div>
       </header>
@@ -61,29 +57,23 @@ function App() {
           <div className="avatar-circle">
             <img src="https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png" alt="Charles" />
           </div>
-          <h2 className="welcome-text">Hello, <span className="username">Charles</span>!</h2>
+          <h2>Hello, <span className="username">Charles</span>!</h2>
         </section>
 
         <section className="charblox-section">
-          <div className="section-header">
-            <h3>Friends</h3>
-            <span className="see-all">See All →</span>
-          </div>
+          <h3>Friends</h3>
           <div className="friends-scroll">
-            {['React', 'NestJS', 'Supabase', 'Vercel', 'UI/UX', 'Node', 'TypeScript'].map((friend) => (
-              <div key={friend} className="friend-item">
+            {['React', 'NestJS', 'Supabase', 'Vercel', 'UI/UX', 'Node'].map(f => (
+              <div key={f} className="friend-item">
                 <div className="friend-img-placeholder"></div>
-                <span className="friend-name">{friend}</span>
+                <span className="friend-name">{f}</span>
               </div>
             ))}
           </div>
         </section>
 
         <section className="charblox-section">
-          <div className="section-header">
-            <h3>My Experiences</h3>
-            <span className="see-all">See All →</span>
-          </div>
+          <h3>My Experiences</h3>
           <div className="experience-grid">
             <div className="exp-card">
               <div className="exp-banner port-tycoon"></div>
@@ -103,9 +93,7 @@ function App() {
         </section>
 
         <section className="charblox-section">
-          <div className="section-header">
-            <h3>Global Chat</h3>
-          </div>
+          <h3>Global Chat</h3>
           <div className="chat-box">
             <div className="chat-history">
               {comments.map((c) => (
@@ -115,22 +103,10 @@ function App() {
                 </div>
               ))}
             </div>
-            
             <form className="chat-controls" onSubmit={handlePost}>
-              <input 
-                type="text" 
-                placeholder="Display Name" 
-                className="chat-user-input"
-                value={user} 
-                onChange={(e) => setUser(e.target.value)} 
-              />
+              <input type="text" placeholder="Name" className="nav-search-input" value={user} onChange={(e) => setUser(e.target.value)} />
               <div className="chat-input-wrapper">
-                <input 
-                  type="text" 
-                  placeholder="Say something..." 
-                  value={msg} 
-                  onChange={(e) => setMsg(e.target.value)}
-                />
+                <input type="text" placeholder="Say something..." value={msg} onChange={(e) => setMsg(e.target.value)} />
                 <button type="submit">SEND</button>
               </div>
             </form>
