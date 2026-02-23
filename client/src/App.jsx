@@ -18,7 +18,7 @@ function App() {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
 
-  // NEW CONNECTION INPUTS
+  // Connection Form States
   const [connName, setConnName] = useState('');
   const [connDesc, setConnDesc] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -30,11 +30,13 @@ function App() {
     try {
       const res = await fetch(`${BACKEND_URL}/comments`);
       if (res.ok) setComments(await res.json());
+      
       const { data: conns } = await supabase.from('connections').select('*').order('created_at', { ascending: false });
       if (conns) setConnections(conns);
+      
       const { data: exps } = await supabase.from('experiences').select('*').order('created_at', { ascending: true });
       if (exps) setExperiences(exps);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Fetch error:", e); }
   };
 
   useEffect(() => {
@@ -64,7 +66,6 @@ function App() {
     let finalImgUrl = 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png';
 
     try {
-      // 1. Upload File if selected
       if (selectedFile) {
         const fileName = `${Date.now()}-${selectedFile.name}`;
         const { error: uploadError } = await supabase.storage
@@ -72,23 +73,16 @@ function App() {
           .upload(fileName, selectedFile);
         
         if (uploadError) throw uploadError;
-
         const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
         finalImgUrl = data.publicUrl;
       }
 
-      // 2. Insert into Table
       const { error } = await supabase
         .from('connections')
-        .insert([{ 
-          name: connName, 
-          description: connDesc, 
-          image_url: finalImgUrl 
-        }]);
+        .insert([{ name: connName, description: connDesc, image_url: finalImgUrl }]);
 
       if (error) throw error;
 
-      // 3. Reset
       setConnName('');
       setConnDesc('');
       setSelectedFile(null);
@@ -111,13 +105,8 @@ function App() {
       <header className="navbar">
         <div className="nav-inner">
           <h1 className="brand">CHARBLOX</h1>
-          <div className="search-bar">
-            <input type="text" placeholder="Search experiences..." />
-          </div>
-          <div className="nav-icons">
-            <span>⏣ 1M+</span>
-            <span>⚙️</span>
-          </div>
+          <div className="search-bar"><input type="text" placeholder="Search experiences..." /></div>
+          <div className="nav-icons"><span>⏣ 1M+</span><span>⚙️</span></div>
         </div>
       </header>
 
@@ -128,6 +117,7 @@ function App() {
             <h2>Hello, <span>Charles</span>!</h2>
           </section>
 
+          {/* CONNECTIONS SECTION */}
           <section className="section">
             <div className="section-head">
               <h3>Connections ({connections.length})</h3>
@@ -141,13 +131,16 @@ function App() {
               
               {connections.map(f => (
                 <div key={f.id} className="friend-card" onClick={() => openDetails(f)}>
-                  <div className="circle-thumb"><img src={f.image_url} alt={f.name} /></div>
+                  <div className="circle-thumb">
+                    <img src={f.image_url} alt={f.name} onError={(e) => e.target.src = 'https://via.placeholder.com/150'} />
+                  </div>
                   <span>{f.name}</span>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* EXPERIENCES SECTION */}
           <section className="section">
             <div className="section-head">
               <h3>My Experiences</h3>
@@ -160,7 +153,7 @@ function App() {
                     <img src={exp.image_url || 'https://via.placeholder.com/150'} alt={exp.title} />
                   </div>
                   <div className="game-meta">
-                    <span className="game-title"><strong>{exp.title}</strong></span>
+                    <span className="game-title">{exp.title}</span>
                     <div>👍 {exp.rating}%</div>
                   </div>
                 </div>
@@ -168,13 +161,14 @@ function App() {
             </div>
           </section>
 
+          {/* CHAT SECTION */}
           <section className="section">
-            <div className="section-head"><h3>Global Chat</h3></div>
+            <h3>Global Chat</h3>
             <div className="chat-window">
               <div className="chat-log">
                 {comments.map(c => (
                   <div key={c.id} className="chat-msg">
-                    <span style={{color: 'var(--blue)', fontWeight: 'bold'}}>[{c.username}]:</span> {c.content}
+                    <span className="chat-user">[{c.username}]:</span> {c.content}
                   </div>
                 ))}
               </div>
@@ -188,52 +182,31 @@ function App() {
         </div>
       </main>
 
-      {/* MODAL: DETAILS */}
+      {/* MODALS */}
       {showDetailsModal && activeItem && (
         <div className="modal-backdrop" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-container" onClick={e => e.stopPropagation()}>
-            <img src={activeItem.image_url} alt="" style={{width: '80px', height: '80px', borderRadius: '50%', marginBottom: '10px'}} />
+            <img src={activeItem.image_url} alt="" className="modal-avatar" />
             <h2>{activeItem.title || activeItem.name}</h2>
-            <p style={{color: '#ccc', margin: '15px 0'}}>{activeItem.description || "No description provided."}</p>
+            <p className="modal-desc">{activeItem.description || "No description provided."}</p>
             <button className="btn-secondary" onClick={() => setShowDetailsModal(false)}>Close</button>
           </div>
         </div>
       )}
 
-      {/* MODAL: CONNECT (RE-FIXED) */}
       {showConnectModal && (
         <div className="modal-backdrop" onClick={() => setShowConnectModal(false)}>
           <div className="modal-container" onClick={e => e.stopPropagation()}>
             <h2>Connect with Charles</h2>
             <form onSubmit={handleAddConnection} className="modal-form">
               <label>Name</label>
-              <input 
-                type="text" 
-                placeholder="Your name" 
-                value={connName} 
-                onChange={(e) => setConnName(e.target.value)} 
-                className="modal-input"
-                required
-              />
+              <input type="text" placeholder="Your name" value={connName} onChange={(e) => setConnName(e.target.value)} className="modal-input" required />
               <label>About You</label>
-              <textarea 
-                placeholder="Write a short bio..." 
-                value={connDesc} 
-                onChange={(e) => setConnDesc(e.target.value)} 
-                className="modal-input"
-                style={{minHeight: '80px', resize: 'none'}}
-              />
+              <textarea placeholder="Write a short bio..." value={connDesc} onChange={(e) => setConnDesc(e.target.value)} className="modal-input" style={{minHeight: '80px', resize: 'none'}} />
               <label>Profile Image</label>
-              <input 
-                type="file" 
-                onChange={(e) => setSelectedFile(e.target.files[0])} 
-                className="modal-input"
-                accept="image/*"
-              />
+              <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} className="modal-input" accept="image/*" />
               <div className="modal-buttons">
-                <button type="submit" className="btn-primary" disabled={isUploading}>
-                  {isUploading ? 'Connecting...' : 'Connect'}
-                </button>
+                <button type="submit" className="btn-primary" disabled={isUploading}>{isUploading ? 'Connecting...' : 'Connect'}</button>
                 <button type="button" className="btn-secondary" onClick={() => setShowConnectModal(false)}>Cancel</button>
               </div>
             </form>
