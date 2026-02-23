@@ -7,24 +7,33 @@
   --gray: #9ca3af;
 }
 
+/* 1. RESET EVERYTHING */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  background: var(--bg);
-  color: var(--white);
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.app-wrapper {
-  min-height: 100vh;
+/* Force the React root to be full width */
+#root {
   width: 100%;
 }
 
-/* NAVBAR */
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  width: 100%;
+  display: block;
+}
+
+/* 2. THE APP WRAPPER */
+.app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* 3. NAVBAR CENTERING */
 .navbar {
   background: var(--nav);
   border-bottom: 1px solid #222;
@@ -32,8 +41,8 @@ body {
 }
 
 .nav-inner {
-  max-width: 1300px;
-  margin: 0 auto; /* Centers the inner navbar content */
+  max-width: 1100px; /* Roblox standard width */
+  margin: 0 auto !important; /* Forces centering */
   padding: 12px 20px;
   display: flex;
   align-items: center;
@@ -41,32 +50,31 @@ body {
 }
 
 .brand { font-size: 22px; font-weight: 800; }
-
 .search-bar { flex: 1; }
 .search-bar input {
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
   padding: 8px 15px;
   background: #0c0d0f;
   border: 1px solid #333;
-  border-radius: 8px;
+  border-radius: 6px;
   color: white;
 }
 
-/* MAIN CONTENT LAYOUT FIX */
+/* 4. MAIN CONTENT CENTERING - THE FIX */
 .main-content {
   width: 100%;
-  display: flex;
-  justify-content: center; /* This centers the content-inner horizontally */
+  padding-top: 20px;
 }
 
 .content-inner {
-  width: 100%;
-  max-width: 1100px; /* Limits the width of the page content like Roblox */
-  padding: 40px 20px;
+  width: 95%; /* Responsive padding */
+  max-width: 1100px; /* Limits width */
+  margin: 0 auto !important; /* THIS IS THE KEY FIX FOR LEFT-HUGGING */
+  padding: 20px 0;
 }
 
-/* HERO SECTION */
+/* 5. HERO SECTION */
 .hero {
   display: flex;
   align-items: center;
@@ -81,33 +89,24 @@ body {
   background: #111;
 }
 
-.hero h2 { font-size: 32px; font-weight: 600; }
-.hero span { font-weight: 800; }
-
-/* SECTIONS */
+/* 6. SECTIONS & GRIDS */
 .section { margin-bottom: 50px; }
-
 .section-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 15px;
   border-bottom: 1px solid #222;
   padding-bottom: 10px;
 }
 
-.see-all { color: var(--gray); font-size: 14px; cursor: pointer; }
-
-/* CONNECTIONS ROW */
 .scroll-row {
   display: flex;
   gap: 15px;
   overflow-x: auto;
-  padding-bottom: 10px;
+  padding-bottom: 15px;
 }
 
-.friend-card { text-align: center; min-width: 100px; cursor: pointer; }
-
+.friend-card { text-align: center; min-width: 100px; }
 .circle-thumb {
   width: 90px;
   height: 90px;
@@ -115,20 +114,17 @@ body {
   overflow: hidden;
   background: #222;
   margin: 0 auto 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-
-.circle-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 .circle-thumb.plus {
   border: 2px dashed #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 30px;
-  color: var(--gray);
+  cursor: pointer;
 }
 
-/* EXPERIENCE GRID */
 .experience-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -140,26 +136,13 @@ body {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #222;
-  transition: transform 0.2s;
 }
-
-.game-card:hover { transform: translateY(-5px); }
 
 .game-thumb { aspect-ratio: 1/1; background: #000; }
 .game-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
 .game-meta { padding: 12px; }
-.game-title {
-  display: block;
-  font-weight: 700;
-  font-size: 15px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-/* CHAT WINDOW */
+/* 7. CHAT WINDOW */
 .chat-window {
   background: #0b0c0f;
   border-radius: 8px;
@@ -170,39 +153,13 @@ body {
 }
 
 .chat-log { flex: 1; padding: 15px; overflow-y: auto; }
-.chat-msg { margin-bottom: 8px; font-size: 14px; }
-.chat-user { color: var(--blue); font-weight: bold; }
-
-.chat-input {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background: #16181b;
-  border-top: 1px solid #222;
-}
-
-.chat-input input {
-  padding: 8px;
-  background: #0c0d0f;
-  border: 1px solid #333;
-  color: white;
-  border-radius: 4px;
-}
-
+.chat-input { display: flex; gap: 10px; padding: 10px; background: #16181b; }
+.chat-input input { background: #0c0d0f; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; }
 .user-input { width: 100px; }
 .msg-input { flex: 1; }
+.chat-input button { background: var(--blue); color: white; border: none; padding: 0 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-.chat-input button {
-  background: var(--blue);
-  color: white;
-  border: none;
-  padding: 0 20px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* MODAL */
+/* 8. MODALS */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -210,11 +167,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
 }
-
-.modal-container {
-  background: var(--card);
-  padding: 30px;
-  border-radius: 12px;
-  width: 400px;
-}
+.modal-container { background: var(--card); padding: 30px; border-radius: 12px; width: 400px; }

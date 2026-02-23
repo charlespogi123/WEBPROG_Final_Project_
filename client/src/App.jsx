@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './App.css';
 
-// Initialize Supabase Client
 const supabase = createClient(
   'https://mfqubfjakdfsmsszaxai.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcXViZmpha2Rmc21zc3pheGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjkxODcsImV4cCI6MjA4NzI0NTE4N30.Q7VjclZFeK9kjV1qohE4iLTilOJlVS0o10b8OYqG8PM'
@@ -14,12 +13,8 @@ function App() {
   const [msg, setMsg] = useState('');
   const [connections, setConnections] = useState([]);
   const [experiences, setExperiences] = useState([]);
-
-  // UI States
-  const [showConnectModal, setShowConnectModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
-  const [viewType, setViewType] = useState('');
 
   const BACKEND_URL = 'https://potential-orbit-jj4q97qvp9ppc56p9-3000.app.github.dev';
 
@@ -27,15 +22,11 @@ function App() {
     try {
       const res = await fetch(`${BACKEND_URL}/comments`);
       if (res.ok) setComments(await res.json());
-
       const { data: conns } = await supabase.from('connections').select('*').order('created_at', { ascending: false });
       if (conns) setConnections(conns);
-
       const { data: exps } = await supabase.from('experiences').select('*').order('created_at', { ascending: true });
       if (exps) setExperiences(exps);
-    } catch (e) {
-      console.error("Fetch Error:", e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => {
@@ -57,15 +48,13 @@ function App() {
     } catch (e) { console.error(e); }
   };
 
-  const openDetails = (item, type) => {
+  const openDetails = (item) => {
     setActiveItem(item);
-    setViewType(type);
     setShowDetailsModal(true);
   };
 
   return (
     <div className="app-wrapper">
-      {/* NAVBAR */}
       <header className="navbar">
         <div className="nav-inner">
           <h1 className="brand">CHARBLOX</h1>
@@ -79,39 +68,32 @@ function App() {
         </div>
       </header>
 
-      {/* CENTERING WRAPPER */}
       <main className="main-content">
         <div className="content-inner">
-          
-          {/* HERO SECTION */}
           <section className="hero">
             <img src="https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png" alt="Charles" />
             <h2>Hello, <span>Charles</span>!</h2>
           </section>
 
-          {/* CONNECTIONS */}
           <section className="section">
             <div className="section-head">
               <h3>Connections ({connections.length})</h3>
               <span className="see-all">See All →</span>
             </div>
             <div className="scroll-row">
-              <div className="friend-card" onClick={() => setShowConnectModal(true)}>
+              <div className="friend-card">
                 <div className="circle-thumb plus">+</div>
                 <span>Connect</span>
               </div>
               {connections.map(f => (
-                <div key={f.id} className="friend-card" onClick={() => openDetails(f, 'profile')}>
-                  <div className="circle-thumb">
-                    <img src={f.image_url} alt={f.name} />
-                  </div>
+                <div key={f.id} className="friend-card" onClick={() => openDetails(f)}>
+                  <div className="circle-thumb"><img src={f.image_url} alt={f.name} /></div>
                   <span>{f.name}</span>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* EXPERIENCES */}
           <section className="section">
             <div className="section-head">
               <h3>My Experiences</h3>
@@ -119,33 +101,32 @@ function App() {
             </div>
             <div className="experience-grid">
               {experiences.map(exp => (
-                <div key={exp.id} className="game-card" onClick={() => openDetails(exp, 'experience')}>
+                <div key={exp.id} className="game-card" onClick={() => openDetails(exp)}>
                   <div className="game-thumb">
                     <img src={exp.image_url || 'https://via.placeholder.com/150'} alt={exp.title} />
                   </div>
                   <div className="game-meta">
-                    <span className="game-title">{exp.title}</span>
-                    <span>👍 {exp.rating}%</span>
+                    <span className="game-title"><strong>{exp.title}</strong></span>
+                    <div>👍 {exp.rating}%</div>
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* GLOBAL CHAT */}
           <section className="section">
             <div className="section-head"><h3>Global Chat</h3></div>
             <div className="chat-window">
               <div className="chat-log">
                 {comments.map(c => (
                   <div key={c.id} className="chat-msg">
-                    <span className="chat-user">[{c.username}]:</span> {c.content}
+                    <span style={{color: 'var(--blue)', fontWeight: 'bold'}}>[{c.username}]:</span> {c.content}
                   </div>
                 ))}
               </div>
               <form className="chat-input" onSubmit={handlePost}>
-                <input type="text" placeholder="User" value={user} onChange={(e) => setUser(e.target.value)} className="user-input" />
-                <input type="text" placeholder="Say..." value={msg} onChange={(e) => setMsg(e.target.value)} className="msg-input" />
+                <input className="user-input" type="text" placeholder="User" value={user} onChange={(e) => setUser(e.target.value)} />
+                <input className="msg-input" type="text" placeholder="Say..." value={msg} onChange={(e) => setMsg(e.target.value)} />
                 <button type="submit">Send</button>
               </form>
             </div>
@@ -153,13 +134,12 @@ function App() {
         </div>
       </main>
 
-      {/* DETAIL MODAL */}
       {showDetailsModal && activeItem && (
         <div className="modal-backdrop" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-container" onClick={e => e.stopPropagation()}>
             <h2>{activeItem.title || activeItem.name}</h2>
             <p>{activeItem.description || "No description provided."}</p>
-            <button className="btn-secondary" onClick={() => setShowDetailsModal(false)}>Close</button>
+            <button style={{marginTop: '20px', padding: '10px'}} onClick={() => setShowDetailsModal(false)}>Close</button>
           </div>
         </div>
       )}
