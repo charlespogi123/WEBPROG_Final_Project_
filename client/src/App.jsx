@@ -48,11 +48,11 @@ function App() {
           <div className="menu-icon">☰</div>
           <h1 className="logo">CHARBLOX</h1>
         </div>
-        <div className="nav-search">
-          <input type="text" placeholder="Search" />
+        <div className="nav-search-container">
+          <input type="text" placeholder="Search" className="nav-search-input" />
         </div>
         <div className="nav-right">
-          <span className="robux-count">⏣ 1,000,000</span>
+          <span className="robux-count"><span className="robux-icon">⏣</span> 1M+</span>
           <div className="user-settings">⚙️</div>
         </div>
       </header>
@@ -61,28 +61,28 @@ function App() {
         {/* Profile/Hero Section */}
         <section className="charblox-hero">
           <div className="avatar-circle">
-            <img src="https://via.placeholder.com/150" alt="Avatar" />
+            <img src="https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png" alt="Avatar" />
           </div>
-          <h2>Hello, <span className="username">Charles</span>!</h2>
+          <h2 className="welcome-text">Hello, <span className="username">Charles</span>!</h2>
         </section>
 
-        {/* Friends Section (Skillset) */}
+        {/* Friends Section (Skills) */}
         <section className="charblox-section">
           <div className="section-header">
             <h3>Friends</h3>
             <span className="see-all">See All →</span>
           </div>
-          <div className="friends-list">
-            {['React', 'NestJS', 'Supabase', 'Vercel', 'UI/UX'].map((friend) => (
+          <div className="friends-scroll">
+            {['React', 'NestJS', 'Supabase', 'Vercel', 'UI/UX', 'Node'].map((friend) => (
               <div key={friend} className="friend-item">
-                <div className="friend-img"></div>
-                <span>{friend}</span>
+                <div className="friend-img-placeholder"></div>
+                <span className="friend-name">{friend}</span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Experiences Section (Works) */}
+        {/* Experiences Section */}
         <section className="charblox-section">
           <div className="section-header">
             <h3>My Experiences</h3>
@@ -90,44 +90,44 @@ function App() {
           </div>
           <div className="experience-grid">
             <div className="exp-card">
-              <div className="exp-banner" style={{background: 'linear-gradient(45deg, #00A2FF, #00E5FF)'}}></div>
+              <div className="exp-banner port-tycoon"></div>
               <div className="exp-info">
                 <h4>Portfolio Tycoon</h4>
-                <p>98% 👍</p>
+                <p className="rating">👍 98%</p>
               </div>
             </div>
             <div className="exp-card">
-              <div className="exp-banner" style={{background: 'linear-gradient(45deg, #FF5722, #FF9800)'}}></div>
+              <div className="exp-banner react-sim"></div>
               <div className="exp-info">
                 <h4>React Simulator</h4>
-                <p>100% 👍</p>
+                <p className="rating">👍 100%</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Global Chat / Comments Section (At the Bottom) */}
-        <section className="charblox-section comment-area">
+        {/* Global Chat (Comments) */}
+        <section className="charblox-section chat-section">
           <h3>Global Chat</h3>
-          <div className="chat-container">
-            <div className="chat-feed">
+          <div className="chat-box">
+            <div className="chat-history">
               {comments.map((c) => (
-                <div key={c.id} className="chat-msg">
-                  <span className="chat-user">[{c.username}]:</span>
-                  <span className="chat-text">{c.content}</span>
+                <div key={c.id} className="chat-line">
+                  <span className="chat-author">[{c.username}]:</span>
+                  <span className="chat-content">{c.content}</span>
                 </div>
               ))}
             </div>
             
-            <form className="chat-input-bar" onSubmit={handlePost}>
+            <form className="chat-controls" onSubmit={handlePost}>
               <input 
                 type="text" 
-                placeholder="Username" 
-                className="user-input"
+                placeholder="Name" 
+                className="chat-user-input"
                 value={user} 
                 onChange={(e) => setUser(e.target.value)} 
               />
-              <div className="msg-wrapper">
+              <div className="chat-input-wrapper">
                 <input 
                   type="text" 
                   placeholder="Say something..." 
