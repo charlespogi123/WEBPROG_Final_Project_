@@ -4,13 +4,15 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Enhanced CORS configuration for Vercel deployment
   app.enableCors({
-    // This allows any of your Vercel deployments to talk to the backend
-    origin: true, 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: true, // Allows all Vercel preview URLs
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Added OPTIONS for pre-flight
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization', // Explicitly allow headers
   });
 
-  await app.listen(3000);
+  // This is required for NestJS to work with Vercel's port expectations
+  await app.listen(process.env.PORT || 3000); 
 }
 bootstrap();
