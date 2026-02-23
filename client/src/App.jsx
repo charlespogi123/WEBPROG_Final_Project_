@@ -172,7 +172,7 @@ function App() {
           <div className="friends-scroll">
             <div className="friend-item connect-trigger" onClick={() => setShowModal(true)}>
               <div className="friend-img-placeholder connect-plus">+</div>
-              <span className="friend-name">Connect</span>
+              <span className="friend-name">Connect!</span>
             </div>
 
             {connections.map((f) => (
