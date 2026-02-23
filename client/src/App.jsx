@@ -13,11 +13,13 @@ function App() {
   const [user, setUser] = useState('');
   const [msg, setMsg] = useState('');
   const [connections, setConnections] = useState([]);
+  const [experiences, setExperiences] = useState([]);
 
-  // Modal States
+  // Modal & Selection States
   const [showConnectModal, setShowConnectModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [activeItem, setActiveItem] = useState(null); // Can be a profile or an experience
+  const [viewType, setViewType] = useState(''); // 'profile' or 'experience'
 
   // Form States
   const [newFriendName, setNewFriendName] = useState('');
@@ -29,25 +31,25 @@ function App() {
 
   const fetchData = async () => {
     try {
-      // Fetch Chat
+      // 1. Fetch NestJS Chat
       const res = await fetch(`${BACKEND_URL}/comments`);
       if (res.ok) setComments(await res.json());
 
-      // Fetch Connections
-      const { data, error } = await supabase
-        .from('connections')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (data) setConnections(data);
-      if (error) console.error(error);
-    } catch (e) { console.error(e); }
+      // 2. Fetch Supabase Connections
+      const { data: conns } = await supabase.from('connections').select('*').order('created_at', { ascending: false });
+      if (conns) setConnections(conns);
+
+      // 3. Fetch Supabase Experiences
+      const { data: exps } = await supabase.from('experiences').select('*').order('created_at', { ascending: true });
+      if (exps) setExperiences(exps);
+    } catch (e) { console.error("Data fetch error:", e); }
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleConnect = async (e) => {
     e.preventDefault();
-    if (!newFriendName) return alert("Please enter a name!");
+    if (!newFriendName) return alert("Name is required!");
     setIsUploading(true);
 
     let finalImgUrl = 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png';
@@ -61,37 +63,21 @@ function App() {
         finalImgUrl = data.publicUrl;
       }
 
-      const { error: dbErr } = await supabase
-        .from('connections')
-        .insert([{ 
-          name: newFriendName, 
-          image_url: finalImgUrl,
-          description: newDescription 
-        }]);
+      await supabase.from('connections').insert([{ 
+        name: newFriendName, 
+        image_url: finalImgUrl, 
+        description: newDescription 
+      }]);
 
-      if (dbErr) throw dbErr;
-
-      // Reset
-      setNewFriendName('');
-      setNewDescription('');
-      setSelectedFile(null);
+      setNewFriendName(''); setNewDescription(''); setSelectedFile(null);
       setShowConnectModal(false);
       fetchData();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const openProfile = (friend) => {
-    setSelectedProfile(friend);
-    setShowProfileModal(true);
+    } catch (err) { alert(err.message); } finally { setIsUploading(false); }
   };
 
   const handlePost = async (e) => {
     e.preventDefault();
-    if (!user || !msg) return alert("Fill in both!");
+    if (!user || !msg) return alert("Fill in both fields!");
     try {
       await fetch(`${BACKEND_URL}/comments`, {
         method: 'POST',
@@ -103,9 +89,15 @@ function App() {
     } catch (e) { console.error(e); }
   };
 
+  const openDetails = (item, type) => {
+    setActiveItem(item);
+    setViewType(type);
+    setShowDetailsModal(true);
+  };
+
   return (
     <div className="charblox-container">
-      {/* MODAL: CONNECT */}
+      {/* MODAL: CONNECT (ADD FRIEND) */}
       {showConnectModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -113,85 +105,95 @@ function App() {
             <form onSubmit={handleConnect}>
               <label>Your Name</label>
               <input type="text" placeholder="Username..." value={newFriendName} onChange={(e) => setNewFriendName(e.target.value)} required />
-              
-              <label>About You (Description)</label>
-              <textarea 
-                className="modal-textarea" 
-                placeholder="What's on your mind?" 
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-              />
-
+              <label>About You</label>
+              <textarea className="modal-textarea" placeholder="Tell us about yourself..." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
               <label>Profile Photo</label>
               <input type="file" accept="image/*" className="file-input" onChange={(e) => setSelectedFile(e.target.files[0])} />
-              
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={() => setShowConnectModal(false)}>Cancel</button>
-                <button type="submit" className="save-btn" disabled={isUploading}>{isUploading ? 'Uploading...' : 'Connect!'}</button>
+                <button type="submit" className="save-btn" disabled={isUploading}>{isUploading ? 'Connecting...' : 'Connect!'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* MODAL: VIEW PROFILE */}
-      {showProfileModal && selectedProfile && (
-        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
-          <div className="modal-content profile-card" onClick={e => e.stopPropagation()}>
-            <div className="profile-header">
-              <div className="profile-avatar-large">
-                <img src={selectedProfile.image_url} alt={selectedProfile.name} />
+      {/* MODAL: VIEW DETAILS (PROFILE OR EXPERIENCE) */}
+      {showDetailsModal && activeItem && (
+        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="modal-content detail-card" onClick={e => e.stopPropagation()}>
+            {viewType === 'experience' ? (
+              <>
+                <img src={activeItem.image_url} className="detail-banner" alt={activeItem.title} />
+                <div className="detail-padding">
+                   <h2>{activeItem.title}</h2>
+                   <div className="detail-stats">👍 {activeItem.rating}% | 👥 {activeItem.playing} Playing</div>
+                   <p className="description-text">{activeItem.description}</p>
+                   <button className="save-btn full-width">Play</button>
+                </div>
+              </>
+            ) : (
+              <div className="detail-padding">
+                <div className="profile-avatar-large"><img src={activeItem.image_url} alt={activeItem.name} /></div>
+                <h2>{activeItem.name}</h2>
+                <label>Description</label>
+                <p className="description-text">{activeItem.description || "No description provided."}</p>
               </div>
-              <h2>{selectedProfile.name}</h2>
+            )}
+            <div className="detail-padding">
+              <button className="cancel-btn full-width" onClick={() => setShowDetailsModal(false)}>Close</button>
             </div>
-            <div className="profile-body">
-              <label>Description</label>
-              <div className="description-box">
-                {selectedProfile.description || "No description provided."}
-              </div>
-            </div>
-            <button className="cancel-btn full-width" onClick={() => setShowProfileModal(false)}>Close</button>
           </div>
         </div>
       )}
 
-      {/* NAVBAR */}
+      {/* NAVIGATION */}
       <header className="charblox-nav">
         <div className="nav-left"><h1 className="logo">CHARBLOX</h1></div>
         <div className="nav-search-container"><input type="text" placeholder="Search Experiences" className="nav-search-input" /></div>
-        <div className="nav-right">
-          <span className="robux-count">⏣ 1M+</span>
-          <div className="user-settings">⚙️</div>
-        </div>
+        <div className="nav-right"><span className="robux-count">⏣ 1M+</span><div className="user-settings">⚙️</div></div>
       </header>
 
       <main className="main-content">
         <section className="charblox-hero">
-          <div className="avatar-circle">
-            <img src="https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png" alt="Charles" />
-          </div>
+          <div className="avatar-circle"><img src="https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png" alt="Charles" /></div>
           <h2>Hello, <span className="username">Charles</span>!</h2>
         </section>
 
+        {/* CONNECTIONS SECTION */}
         <section className="charblox-section">
-          <h3>Connections ({connections.length})</h3>
-          <div className="friends-scroll">
+          <div className="section-header"><h3>Connections ({connections.length})</h3><span className="see-all">See All →</span></div>
+          <div className="horizontal-scroll">
             <div className="friend-item connect-trigger" onClick={() => setShowConnectModal(true)}>
               <div className="friend-img-placeholder connect-plus">+</div>
               <span className="friend-name">Connect!</span>
             </div>
-
-            {connections.map((f) => (
-              <div key={f.id} className="friend-item" onClick={() => openProfile(f)}>
-                <div className="friend-img-placeholder">
-                  <img src={f.image_url} alt={f.name} className="friend-avatar-img" />
-                </div>
+            {connections.map(f => (
+              <div key={f.id} className="friend-item" onClick={() => openDetails(f, 'profile')}>
+                <div className="friend-img-placeholder"><img src={f.image_url} className="friend-avatar-img" alt={f.name} /></div>
                 <span className="friend-name">{f.name}</span>
               </div>
             ))}
           </div>
         </section>
 
+        {/* MY EXPERIENCES SECTION */}
+        <section className="charblox-section">
+          <div className="section-header"><h3>My Experiences</h3><span className="see-all">See All →</span></div>
+          <div className="horizontal-scroll">
+            {experiences.map(exp => (
+              <div key={exp.id} className="exp-card-v2" onClick={() => openDetails(exp, 'experience')}>
+                <div className="exp-thumb"><img src={exp.image_url} alt={exp.title} /></div>
+                <div className="exp-info-v2">
+                  <span className="exp-title-v2">{exp.title}</span>
+                  <span className="exp-rating-v2">👍 {exp.rating}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* GLOBAL CHAT */}
         <section className="charblox-section">
           <h3>Global Chat</h3>
           <div className="chat-box">
