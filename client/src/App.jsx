@@ -6,7 +6,7 @@ function App() {
   const [user, setUser] = useState('');
   const [msg, setMsg] = useState('');
 
-  // --- NEW STATE FOR CONNECTIONS ---
+  // Connections State
   const [showModal, setShowModal] = useState(false);
   const [newFriendName, setNewFriendName] = useState('');
   const [newFriendImg, setNewFriendImg] = useState('');
@@ -14,7 +14,8 @@ function App() {
     { name: 'React', img: '' },
     { name: 'NestJS', img: '' },
     { name: 'Supabase', img: '' },
-    { name: 'Vercel', img: '' }
+    { name: 'Vercel', img: '' },
+    { name: 'UI/UX', img: '' }
   ]);
 
   const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -37,10 +38,9 @@ function App() {
     e.preventDefault();
     if (!newFriendName) return alert("Please enter a name!");
     
-    // Add new person to the list
     const newFriend = {
       name: newFriendName,
-      img: newFriendImg || 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png' // Default if empty
+      img: newFriendImg || 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png'
     };
     
     setConnections([newFriend, ...connections]);
@@ -65,7 +65,7 @@ function App() {
 
   return (
     <div className="charblox-container">
-      {/* --- MODAL POPUP --- */}
+      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -94,6 +94,7 @@ function App() {
         </div>
       )}
 
+      {/* NAVBAR */}
       <header className="charblox-nav">
         <div className="nav-left">
           <div className="menu-icon">☰</div>
@@ -108,6 +109,7 @@ function App() {
         </div>
       </header>
 
+      {/* MAIN CONTENT */}
       <main className="main-content">
         <section className="charblox-hero">
           <div className="avatar-circle">
@@ -119,7 +121,6 @@ function App() {
         <section className="charblox-section">
           <h3>Connections ({connections.length})</h3>
           <div className="friends-scroll">
-            {/* --- THE CONNECT BUTTON --- */}
             <div className="friend-item connect-trigger" onClick={() => setShowModal(true)}>
               <div className="friend-img-placeholder connect-plus">+</div>
               <span className="friend-name">Connect</span>
@@ -128,7 +129,7 @@ function App() {
             {connections.map((f, index) => (
               <div key={index} className="friend-item">
                 <div className="friend-img-placeholder">
-                  {f.img ? <img src={f.img} alt={f.name} className="friend-avatar-img" /> : null}
+                  <img src={f.img || 'https://tr.rbxcdn.com/30day-avatarheadshot/150/150/AvatarHeadshot/Png'} alt={f.name} className="friend-avatar-img" />
                 </div>
                 <span className="friend-name">{f.name}</span>
               </div>
@@ -136,7 +137,6 @@ function App() {
           </div>
         </section>
 
-        {/* Experiences and Chat remain same below... */}
         <section className="charblox-section">
           <h3>My Experiences</h3>
           <div className="experience-grid">
@@ -169,7 +169,7 @@ function App() {
               ))}
             </div>
             <form className="chat-controls" onSubmit={handlePost}>
-              <input type="text" placeholder="Name" className="nav-search-input" value={user} onChange={(e) => setUser(e.target.value)} />
+              <input type="text" placeholder="Name" className="chat-user-input" value={user} onChange={(e) => setUser(e.target.value)} />
               <div className="chat-input-wrapper">
                 <input type="text" placeholder="Say something..." value={msg} onChange={(e) => setMsg(e.target.value)} />
                 <button type="submit">SEND</button>

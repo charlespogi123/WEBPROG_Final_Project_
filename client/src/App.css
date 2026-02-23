@@ -1,65 +1,94 @@
-/* Modal Overlay */
-.modal-overlay {
-  position: fixed;
+:root {
+  --bg-dark: #111213;
+  --nav-dark: #232527;
+  --card-dark: #191B1D;
+  --rbx-blue: #00A2FF;
+  --text-white: #FFFFFF;
+  --text-gray: #ADB5BD;
+}
+
+#root { width: 100%; display: block; }
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.charblox-nav {
+  background-color: var(--nav-dark);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
+  z-index: 1000;
 }
 
+.main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* HERO */
+.charblox-hero { display: flex; align-items: center; gap: 20px; padding-bottom: 30px; }
+.avatar-circle {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: #393B3D; border: 3px solid #fff; overflow: hidden;
+}
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+/* FRIENDS ROW */
+.friends-scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+.friend-item { text-align: center; min-width: 80px; }
+.friend-img-placeholder {
+  width: 75px; height: 75px; background: var(--card-dark);
+  border-radius: 50%; margin: 0 auto 10px; border: 1px solid #333; overflow: hidden;
+}
+.friend-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* MODAL STYLES */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 9999;
+}
 .modal-content {
-  background: var(--card-dark);
-  padding: 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  border: 1px solid #333;
+  background: var(--card-dark); padding: 30px; border-radius: 10px;
+  width: 90%; max-width: 400px; border: 1px solid #444;
 }
-
-.modal-content h3 { margin-top: 0; margin-bottom: 20px; }
-.modal-content label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-gray); }
 .modal-content input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  background: #111213;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 6px;
+  width: 100%; padding: 10px; margin: 10px 0 20px; background: #111213;
+  border: 1px solid #444; color: white; border-radius: 4px;
 }
-
 .modal-actions { display: flex; gap: 10px; }
-.modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 4px; cursor: pointer; }
+.save-btn { background: var(--rbx-blue); color: white; font-weight: bold; }
 
-.cancel-btn { background: #393B3D; color: white; }
-.save-btn { background: var(--rbx-blue); color: white; }
+/* EXPERIENCE GRID */
+.experience-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;
+}
+.exp-card { background: var(--card-dark); border-radius: 8px; overflow: hidden; }
+.exp-banner { height: 100px; }
+.port-tycoon { background: #00A2FF; }
+.react-sim { background: #FF9800; }
+.exp-info { padding: 10px; }
 
-/* Connect Button Styling */
-.connect-trigger { cursor: pointer; }
-.connect-plus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-  background: #232527 !important;
-  border: 2px dashed #444 !important;
-  color: var(--rbx-blue);
-}
-.connect-trigger:hover .connect-plus {
-  background: #2a2d30 !important;
-  border-color: var(--rbx-blue) !important;
-}
-
-.friend-avatar-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
+/* CHAT */
+.chat-box { background: #000; border: 1px solid #333; border-radius: 8px; height: 350px; display: flex; flex-direction: column; }
+.chat-history { flex: 1; padding: 15px; overflow-y: auto; color: #00E676; font-family: monospace; }
+.chat-controls { padding: 15px; background: var(--nav-dark); }
+.chat-user-input { width: 100%; margin-bottom: 10px; background: #111213; border: 1px solid #444; color: white; padding: 5px; }
+.chat-input-wrapper { display: flex; gap: 10px; }
+.chat-input-wrapper input { flex: 1; padding: 8px; background: #111213; border: 1px solid #444; color: white; }
+.chat-input-wrapper button { background: var(--rbx-blue); border: none; color: white; padding: 0 15px; cursor: pointer; }
