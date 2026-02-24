@@ -13,6 +13,12 @@ import badgeCyber from './assets/cyber.png';
 import badgeWeb from './assets/webbuilder.png';
 import badgeIT from './assets/2ndyearit.png';
 
+// BADGE IMAGES
+import badgeHonor from './assets/honorstudent.png';
+import badgeSHS from './assets/shsgraduate.png';
+import badgeCyber from './assets/cyber.png';
+import badgeWeb from './assets/webbuilder.png';
+import badgeIT from './assets/2ndyearit.png';
 
 // EDUCATION IMAGES
 import edu1_1 from './assets/edu_apc1.png';
@@ -33,6 +39,8 @@ import edu3_4 from './assets/edu_jhs4.png';
 
 // IMPORT LOCAL LOGOS
 import defaultBacon from './assets/bacon.png';
+import defaultBaconGirl from './assets/bacongirl.png';
+import defaultAvatar3 from './assets/avatar3.png';
 import pythonLogo from './experiences/python.png';
 import htmlLogo from './experiences/html.png';
 import cssLogo from './experiences/css.png';
@@ -74,35 +82,35 @@ const badges = [
     img: badgeHonor,
     label: 'Honor Student',
     desc: 'Consistent honor student 2024–2026',
-    color: 'black',
+    color: 'gold',
   },
   {
     id: 2,
     img: badgeSHS,
     label: 'SHS Graduate',
     desc: 'Graduated with honors in Senior High School',
-    color: 'black',
+    color: 'blue',
   },
   {
     id: 3,
     img: badgeCyber,
     label: 'Cyber Learner',
     desc: 'Actively studying cybersecurity & Kali Linux',
-    color: 'black',
+    color: 'red',
   },
   {
     id: 5,
     img: badgeWeb,
     label: 'Web Builder',
     desc: 'Proficient in HTML, CSS & JavaScript',
-    color: 'black',
+    color: 'orange',
   },
   {
     id: 7,
     img: badgeIT,
     label: '2nd Year IT',
     desc: 'Asia Pacific College — BS in IT',
-    color: 'black',
+    color: 'purple',
   },
 ];
 
@@ -168,13 +176,20 @@ function App() {
   const [connName, setConnName] = useState('');
   const [connDesc, setConnDesc] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedAvatar, setSelectedAvatar] = useState('bacon');
   const [isUploading, setIsUploading] = useState(false);
+
+  const defaultAvatars = {
+    bacon:     defaultBacon,
+    bacongirl: defaultBaconGirl,
+    avatar3:   defaultAvatar3,
+  };
 
   const educationRef = useRef(null);
   const experienceRef = useRef(null);
   const gallerySectionRef = useRef(null);
 
-  const BACKEND_URL = 'https://personal-website-finals-wb7f.vercel.app';
+  const BACKEND_URL = 'https://potential-orbit-jj4q97qvp9ppc56p9-3000.app.github.dev';
 
   const nextImage = (images) => {
     setGalleryIndex((prev) => (prev + 1) % images.length);
@@ -256,7 +271,7 @@ function App() {
     e.preventDefault();
     if (!connName) return alert("Please provide a name!");
     setIsUploading(true);
-    let finalImgUrl = defaultBacon;
+    let finalImgUrl = defaultAvatars[selectedAvatar] || defaultBacon;
     try {
       if (selectedFile) {
         const fileName = `${Date.now()}-${selectedFile.name}`;
@@ -265,7 +280,7 @@ function App() {
         finalImgUrl = data.publicUrl;
       }
       await supabase.from('connections').insert([{ name: connName, description: connDesc, image_url: finalImgUrl }]);
-      setConnName(''); setConnDesc(''); setSelectedFile(null); setShowConnectModal(false); fetchData();
+      setConnName(''); setConnDesc(''); setSelectedFile(null); setSelectedAvatar('bacon'); setShowConnectModal(false); fetchData();
     } catch (err) { alert(err.message); } finally { setIsUploading(false); }
   };
 
@@ -486,15 +501,92 @@ function App() {
       {/* MODALS */}
       {showConnectModal && (
         <div className="modal-backdrop" onClick={() => setShowConnectModal(false)}>
-          <div className="roblox-modal" onClick={e => e.stopPropagation()}>
+          <div className="roblox-modal connect-modal" onClick={e => e.stopPropagation()}>
             <button className="close-x" onClick={() => setShowConnectModal(false)}>✕</button>
-            <h2 className="modal-title">New Connection</h2>
-            <form onSubmit={handleAddConnection}>
-              <div className="form-item"><label>Name</label><input type="text" value={connName} onChange={(e) => setConnName(e.target.value)} required /></div>
-              <div className="form-item"><label>Bio</label><textarea value={connDesc} onChange={(e) => setConnDesc(e.target.value)} /></div>
-              <div className="form-item"><label>Avatar</label><input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} /></div>
+
+            {/* Header */}
+            <div className="connect-modal-header">
+              <div className="connect-preview-avatar">
+                <img
+                  src={selectedFile ? URL.createObjectURL(selectedFile) : defaultAvatars[selectedAvatar]}
+                  alt="preview"
+                />
+              </div>
+              <div>
+                <h2 className="connect-modal-title">New Connection</h2>
+                <p className="connect-modal-sub">Add someone to your network</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddConnection} className="connect-form">
+
+              {/* Name */}
+              <div className="form-item">
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter name..."
+                  value={connName}
+                  onChange={(e) => setConnName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Bio */}
+              <div className="form-item">
+                <label>Bio <span className="form-optional">optional</span></label>
+                <textarea
+                  placeholder="Say something about them..."
+                  value={connDesc}
+                  onChange={(e) => setConnDesc(e.target.value)}
+                />
+              </div>
+
+              {/* Default Avatar Picker */}
+              <div className="form-item">
+                <label>Default Avatar</label>
+                <div className="avatar-picker">
+                  {[
+                    { key: 'bacon',     src: defaultBacon,     label: 'Bacon' },
+                    { key: 'bacongirl', src: defaultBaconGirl, label: 'Bacon Girl' },
+                    { key: 'avatar3',   src: defaultAvatar3,   label: 'Avatar 3' },
+                  ].map(av => (
+                    <button
+                      key={av.key}
+                      type="button"
+                      className={`avatar-pick-btn ${selectedAvatar === av.key && !selectedFile ? 'selected' : ''}`}
+                      onClick={() => { setSelectedAvatar(av.key); setSelectedFile(null); }}
+                    >
+                      <img src={av.src} alt={av.label} />
+                      <span>{av.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Upload */}
+              <div className="form-item">
+                <label>Custom Photo <span className="form-optional">optional — overrides above</span></label>
+                <label className="file-upload-btn">
+                  {selectedFile ? `✔ ${selectedFile.name}` : '📁 Choose File'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => setSelectedFile(e.target.files[0] || null)}
+                  />
+                </label>
+                {selectedFile && (
+                  <button type="button" className="file-clear-btn" onClick={() => setSelectedFile(null)}>
+                    ✕ Remove photo
+                  </button>
+                )}
+              </div>
+
               <div className="modal-buttons">
-                <button type="submit" className="btn-save" disabled={isUploading}>{isUploading ? '...' : 'Connect'}</button>
+                <button type="submit" className="btn-save" disabled={isUploading}>
+                  {isUploading ? 'Connecting...' : '+ Connect'}
+                </button>
                 <button type="button" className="btn-cancel" onClick={() => setShowConnectModal(false)}>Cancel</button>
               </div>
             </form>
